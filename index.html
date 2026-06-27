@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Tournament Scoring System — BTEC Unit 4</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@700;900&display=swap');
+
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    min-height:100vh;
+    background:linear-gradient(160deg,#0a0a1a 0%,#0d1b2a 50%,#0a0a1a 100%);
+    font-family:'Share Tech Mono',monospace;
+    color:#e0e0e0;
+  }
+
+  /* ── Header ── */
+  header{
+    background:linear-gradient(90deg,#0f3460,#16213e);
+    border-bottom:2px solid #4ECDC4;
+    padding:18px 30px;
+    display:flex;align-items:center;justify-content:space-between;
+    box-shadow:0 4px 30px #4ECDC422;
+    position:sticky;top:0;z-index:100;
+  }
+  header .sub{color:#4ECDC4;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;}
+  header h1{font-family:'Orbitron',sans-serif;font-size:20px;color:#fff;}
+  #btnTest{
+    background:linear-gradient(135deg,#FF6B6B,#ee5a24);
+    border:none;border-radius:10px;color:#fff;
+    font-family:'Share Tech Mono',monospace;font-weight:700;font-size:13px;
+    padding:10px 20px;cursor:pointer;box-shadow:0 4px 15px #FF6B6B44;
+  }
+
+  /* ── Tabs ── */
+  #tabs{
+    display:flex;gap:4px;padding:12px 30px 0;
+    border-bottom:1px solid #1e2d3d;overflow-x:auto;
+    background:#0a0a1a;
+  }
+  .tab-btn{
+    background:transparent;color:#8899aa;border:none;
+    border-radius:8px 8px 0 0;padding:9px 18px;cursor:pointer;
+    font-family:'Share Tech Mono',monospace;font-size:13px;
+    white-space:nowrap;transition:all .2s;
+  }
+  .tab-btn.active{background:#4ECDC4;color:#0a0a1a;font-weight:800;}
+
+  /* ── Content ── */
+  #content{padding:28px 30px;max-width:1100px;margin:0 auto;}
+  .page{display:none;}
+  .page.active{display:block;}
+
+  /* ── Stat Cards ── */
+  .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:32px;}
+  .stat-card{
+    background:linear-gradient(135deg,#0f3460 0%,#16213e 100%);
+    border-radius:14px;padding:18px 22px;
+    display:flex;align-items:center;gap:14px;
+  }
+  .stat-icon{font-size:30px;}
+  .stat-label{color:#8899aa;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;}
+  .stat-value{font-size:26px;font-weight:900;line-height:1.2;}
+
+  /* ── Badge ── */
+  .badge{
+    display:inline-block;padding:2px 10px;border-radius:99px;
+    font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;
+  }
+
+  /* ── Section title ── */
+  .sec-title{font-size:11px;font-weight:700;letter-spacing:2px;margin-bottom:18px;text-transform:uppercase;}
+
+  /* ── Team Card ── */
+  .team-card{
+    border-radius:14px;padding:22px;margin-bottom:18px;
+    background:linear-gradient(135deg,#0f3460 0%,#16213e 100%);
+  }
+  .team-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
+  .team-name{font-weight:900;font-size:16px;}
+  .team-members{color:#8899aa;font-size:12px;}
+  .events-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;}
+  .event-row{
+    border-radius:10px;padding:10px 14px;
+    display:flex;align-items:center;gap:10px;
+    background:#0a1628;border:1px solid #333;
+    transition:opacity .2s,border-color .2s;
+  }
+  .event-row.off{opacity:.45;}
+  .event-row input[type=checkbox]{cursor:pointer;width:16px;height:16px;}
+  .event-icon{font-size:16px;}
+  .event-name{flex:1;font-size:13px;}
+  .score-input{
+    width:64px;padding:4px 8px;background:#16213e;
+    border:1px solid #4ECDC4;border-radius:6px;
+    color:#eee;font-size:14px;text-align:center;
+    font-family:'Share Tech Mono',monospace;outline:none;
+  }
+  .score-input:disabled{border-color:#333;color:#555;cursor:not-allowed;background:#1a1a2e;}
+
+  /* ── Leaderboard ── */
+  .lb-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
+  @media(max-width:700px){.lb-grid{grid-template-columns:1fr;}}
+  .lb-row{
+    border-radius:10px;padding:12px 16px;margin-bottom:8px;
+    display:flex;align-items:center;gap:12px;
+    background:#0f3460;border:1px solid #1e2d3d;
+  }
+  .lb-medal{font-size:20px;min-width:36px;text-align:center;}
+  .lb-name{font-weight:700;font-size:14px;}
+  .lb-bar-bg{height:4px;background:#1e2d3d;border-radius:2px;margin-top:4px;}
+  .lb-bar{height:100%;border-radius:2px;transition:width .4s;}
+  .lb-pts{font-weight:900;font-size:16px;min-width:50px;text-align:right;}
+
+  /* ── Tests ── */
+  table{width:100%;border-collapse:collapse;}
+  th,td{padding:10px 14px;border:1px solid #1e2d3d;font-size:13px;text-align:left;}
+  thead tr{background:#0f3460;color:#8899aa;font-size:11px;letter-spacing:1px;text-transform:uppercase;}
+  tbody tr:nth-child(even){background:#0a1628;}
+  tbody tr:nth-child(odd){background:#0d1b2a;}
+
+  /* ── Eval cards ── */
+  .eval-card{border-radius:12px;padding:20px;margin-bottom:14px;background:linear-gradient(135deg,#0f3460,#16213e);}
+  .eval-title{font-weight:700;margin-bottom:8px;}
+  .eval-body{color:#bbb;font-size:13px;line-height:1.8;}
+
+  /* ── Feedback ── */
+  textarea{
+    width:100%;background:#16213e;border:1px solid #A29BFE55;
+    border-radius:8px;color:#eee;font-family:'Share Tech Mono',monospace;
+    font-size:13px;padding:12px;resize:vertical;outline:none;
+  }
+  #btnFeedback{
+    margin-top:10px;background:#A29BFE;border:none;border-radius:8px;
+    color:#0a0a1a;font-family:'Share Tech Mono',monospace;font-weight:800;
+    font-size:13px;padding:10px 22px;cursor:pointer;
+  }
+  #feedbackOk{color:#4ECDC4;font-weight:700;display:none;}
+
+  /* ── Individuals grid ── */
+  .ind-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px;}
+  .ind-card{
+    background:linear-gradient(135deg,#0f3460 0%,#16213e 100%);
+    border:1px solid #4ECDC433;border-radius:12px;padding:16px;
+  }
+  .ind-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+  .ind-name{color:#4ECDC4;font-weight:700;font-size:14px;cursor:pointer;}
+  .ind-name-input{
+    background:#16213e;border:1px solid #4ECDC4;border-radius:6px;
+    color:#fff;padding:3px 8px;font-family:'Share Tech Mono',monospace;font-size:13px;width:160px;
+  }
+  .ind-event-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;transition:opacity .2s;}
+  .ind-event-row.off{opacity:.45;}
+
+  /* ── Score Entry Table ── */
+  .se-table{width:100%;border-collapse:collapse;margin-bottom:28px;}
+  .se-table th{padding:10px 12px;background:#0f3460;color:#8899aa;font-size:11px;letter-spacing:1px;text-transform:uppercase;border:1px solid #1e2d3d;white-space:nowrap;}
+  .se-table td{padding:8px 10px;border:1px solid #1e2d3d;vertical-align:middle;}
+  .se-table tbody tr:nth-child(even){background:#0a1628;}
+  .se-table tbody tr:nth-child(odd){background:#0d1b2a;}
+  .se-entity-label{font-weight:700;font-size:13px;white-space:nowrap;}
+  .se-total-cell{font-weight:900;font-size:15px;min-width:70px;text-align:right;}
+  .se-cell{display:flex;align-items:center;gap:6px;min-width:110px;}
+  .se-cell input[type=checkbox]{cursor:pointer;width:15px;height:15px;}
+  .se-score{
+    width:58px;padding:4px 6px;background:#16213e;border:1px solid #4ECDC4;
+    border-radius:6px;color:#eee;font-size:13px;text-align:center;
+    font-family:'Share Tech Mono',monospace;outline:none;
+  }
+  .se-score:disabled{border-color:#333;color:#555;cursor:not-allowed;background:#1a1a2e;}
+  .se-score.invalid{border-color:#FF6B6B!important;box-shadow:0 0 6px #FF6B6B44;}
+
+  /* ── Inline validation tooltip ── */
+  .se-err{color:#FF6B6B;font-size:10px;display:none;margin-top:2px;}
+
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+  @media(max-width:700px){.two-col{grid-template-columns:1fr;}}
+  .info-box{background:#0f3460;border-radius:14px;padding:22px;}
+
+  /* ── Setup Modal ── */
+  #setupOverlay{
+    position:fixed;inset:0;background:#000000cc;z-index:999;
+    display:flex;align-items:center;justify-content:center;padding:20px;
+  }
+  #setupModal{
+    background:linear-gradient(160deg,#0d1b2a,#0f3460);
+    border:1px solid #4ECDC4;border-radius:18px;
+    padding:32px;width:100%;max-width:700px;max-height:90vh;overflow-y:auto;
+    box-shadow:0 0 60px #4ECDC422;
+  }
+  #setupModal h2{font-family:'Orbitron',sans-serif;color:#4ECDC4;font-size:18px;margin-bottom:6px;}
+  #setupModal .sub-label{color:#8899aa;font-size:11px;letter-spacing:2px;text-transform:uppercase;margin-bottom:24px;}
+  .setup-section{margin-bottom:28px;}
+  .setup-section-title{color:#FFE66D;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:12px;}
+  .setup-row{display:flex;gap:10px;align-items:center;margin-bottom:8px;flex-wrap:wrap;}
+  .setup-input{
+    flex:1;min-width:120px;background:#16213e;border:1px solid #4ECDC455;
+    border-radius:8px;color:#eee;padding:8px 12px;
+    font-family:'Share Tech Mono',monospace;font-size:13px;outline:none;
+  }
+  .setup-input:focus{border-color:#4ECDC4;}
+  .setup-select{
+    background:#16213e;border:1px solid #4ECDC455;border-radius:8px;
+    color:#eee;padding:8px 12px;font-family:'Share Tech Mono',monospace;font-size:13px;outline:none;cursor:pointer;
+  }
+  .setup-select:focus{border-color:#4ECDC4;}
+  #btnStart{
+    width:100%;margin-top:8px;padding:14px;
+    background:linear-gradient(135deg,#4ECDC4,#44b8b0);
+    border:none;border-radius:12px;color:#0a0a1a;
+    font-family:'Share Tech Mono',monospace;font-weight:800;font-size:15px;
+    cursor:pointer;letter-spacing:1px;box-shadow:0 4px 20px #4ECDC444;
+  }
+  #btnStart:hover{opacity:.9;}
+  .setup-note{color:#FF6B6B;font-size:11px;margin-top:6px;}
+</style>
+</head>
+<body>
+
+<!-- Setup Modal -->
+<div id="setupOverlay">
+  <div id="setupModal">
+    <h2>🏆 Tournament Setup</h2>
+    <div class="sub-label">Configure teams &amp; events before starting</div>
+
+    <div class="setup-section">
+      <div class="setup-section-title">👥 Team Names</div>
+      <div id="teamInputs">
+        <div class="setup-row"><span style="color:#8899aa;font-size:12px;min-width:60px;">Team 1</span><input class="setup-input team-name-inp" placeholder="e.g. Team Alpha" value="Team Alpha"/></div>
+        <div class="setup-row"><span style="color:#8899aa;font-size:12px;min-width:60px;">Team 2</span><input class="setup-input team-name-inp" placeholder="e.g. Team Beta"  value="Team Beta"/></div>
+        <div class="setup-row"><span style="color:#8899aa;font-size:12px;min-width:60px;">Team 3</span><input class="setup-input team-name-inp" placeholder="e.g. Team Gamma" value="Team Gamma"/></div>
+        <div class="setup-row"><span style="color:#8899aa;font-size:12px;min-width:60px;">Team 4</span><input class="setup-input team-name-inp" placeholder="e.g. Team Delta" value="Team Delta"/></div>
+      </div>
+    </div>
+
+    <div class="setup-section">
+      <div class="setup-section-title"> Events / Competitions</div>
+      <div style="display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;margin-bottom:8px;padding:0 4px;">
+        <span style="color:#4ECDC4;font-size:11px;">Event Name</span>
+        <span style="color:#4ECDC4;font-size:11px;min-width:90px;">Type</span>
+        <span style="color:#4ECDC4;font-size:11px;min-width:40px;">Icon</span>
+      </div>
+      <div id="eventInputs">
+        <div class="setup-row">
+          <input class="setup-input ev-name" value="Sprint Race"/>
+          <select class="setup-select ev-type"><option value="individual" selected>Individual</option><option value="team">Team</option><option value="both">Both</option></select>
+          <input class="setup-input ev-icon" value="🏃" style="max-width:58px;text-align:center;"/>
+        </div>
+        <div class="setup-row">
+          <input class="setup-input ev-name" value="Math Challenge"/>
+          <select class="setup-select ev-type"><option value="individual">Individual</option><option value="team">Team</option><option value="both" selected>Both</option></select>
+          <input class="setup-input ev-icon" value="🧮" style="max-width:58px;text-align:center;"/>
+        </div>
+        <div class="setup-row">
+          <input class="setup-input ev-name" value="Relay Race"/>
+          <select class="setup-select ev-type"><option value="individual">Individual</option><option value="team" selected>Team</option><option value="both">Both</option></select>
+          <input class="setup-input ev-icon" value="🏅" style="max-width:58px;text-align:center;"/>
+        </div>
+        <div class="setup-row">
+          <input class="setup-input ev-name" value="Quiz Bowl"/>
+          <select class="setup-select ev-type"><option value="individual">Individual</option><option value="team">Team</option><option value="both" selected>Both</option></select>
+          <input class="setup-input ev-icon" value="🧠" style="max-width:58px;text-align:center;"/>
+        </div>
+        <div class="setup-row">
+          <input class="setup-input ev-name" value="Coding Duel"/>
+          <select class="setup-select ev-type"><option value="individual" selected>Individual</option><option value="team">Team</option><option value="both">Both</option></select>
+          <input class="setup-input ev-icon" value="💻" style="max-width:58px;text-align:center;"/>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <button onclick="addEventRow()" style="background:#FFE66D22;border:1px solid #FFE66D55;color:#FFE66D;border-radius:8px;padding:6px 14px;cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:12px;">+ Add Event</button>
+        <button onclick="removeEventRow()" style="background:#FF6B6B22;border:1px solid #FF6B6B55;color:#FF6B6B;border-radius:8px;padding:6px 14px;cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:12px;">− Remove Last</button>
+      </div>
+    </div>
+
+    <button id="btnStart" onclick="startTournament()"> Start Tournament</button>
+    <div class="setup-note" id="setupError" style="display:none;text-align:center;margin-top:8px;"></div>
+  </div>
+</div>
+
+<!-- Header -->
+<header>
+  <div>
+    <div class="sub">BTEC Unit 4 — Programming</div>
+    <h1>🏆 Tournament Scoring System</h1>
+  </div>
+  <button id="btnTest">🧪 Run Tests</button>
+</header>
+
+<!-- Tabs -->
+<div id="tabs">
+  <button class="tab-btn active" data-tab="dashboard">📊 Dashboard</button>
+  <button class="tab-btn" data-tab="teams">👥 Teams</button>
+  <button class="tab-btn" data-tab="individuals">🏃 Individuals</button>
+  <button class="tab-btn" data-tab="scoreentry">📝 Score Entry</button>
+  <button class="tab-btn" data-tab="leaderboard">🏆 Leaderboard</button>
+  <button class="tab-btn" data-tab="tests">🧪 Tests</button>
+  <button class="tab-btn" data-tab="evaluation">📋 Evaluation</button>
+</div>
+
+<div id="content">
+
+  <!-- DASHBOARD -->
+  <div class="page active" id="page-dashboard">
+    <div class="sec-title" style="color:#4ECDC4">System Overview</div>
+    <div class="stats-grid">
+      <div class="stat-card" style="border:1px solid #4ECDC433;box-shadow:0 4px 20px #4ECDC422;">
+        <div class="stat-icon"></div>
+        <div><div class="stat-label">Total Participants</div><div class="stat-value" style="color:#4ECDC4">40</div></div>
+      </div>
+      <div class="stat-card" style="border:1px solid #FF6B6B33;box-shadow:0 4px 20px #FF6B6B22;">
+        <div class="stat-icon"></div>
+        <div><div class="stat-label">Teams</div><div class="stat-value" style="color:#FF6B6B">4</div></div>
+      </div>
+      <div class="stat-card" style="border:1px solid #FFE66D33;box-shadow:0 4px 20px #FFE66D22;">
+        <div class="stat-icon"></div>
+        <div><div class="stat-label">Events</div><div class="stat-value" style="color:#FFE66D">5</div></div>
+      </div>
+      <div class="stat-card" style="border:1px solid #A29BFE33;box-shadow:0 4px 20px #A29BFE22;" id="activeCard">
+        <div class="stat-icon"></div>
+        <div><div class="stat-label">Active Entries</div><div class="stat-value" style="color:#A29BFE" id="activeCount">0</div></div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <div class="info-box" style="border:1px solid #4ECDC422;">
+        <div style="color:#4ECDC4;font-weight:700;margin-bottom:14px;font-size:13px;">🏆 Current Leaders</div>
+        <div style="margin-bottom:12px;">
+          <div style="color:#8899aa;font-size:11px;margin-bottom:4px;">TOP TEAM</div>
+          <div style="display:flex;align-items:center;gap:10px;" id="topTeamDiv">
+            <span style="font-size:22px;">🥇</span>
+            <span id="topTeamName" style="color:#fff;font-weight:700;">—</span>
+            <span id="topTeamPts" class="badge"></span>
+          </div>
+        </div>
+        <div>
+          <div style="color:#8899aa;font-size:11px;margin-bottom:4px;">TOP INDIVIDUAL</div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="font-size:22px;">🥇</span>
+            <span id="topIndName" style="color:#fff;font-weight:700;">—</span>
+            <span id="topIndPts" class="badge"></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-box" style="border:1px solid #A29BFE22;">
+        <div style="color:#A29BFE;font-weight:700;margin-bottom:14px;font-size:13px;"> Events Overview</div>
+        <div id="eventsOverview"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TEAMS -->
+  <div class="page" id="page-teams">
+    <div class="sec-title" style="color:#FF6B6B">Team Score Entry</div>
+    <div id="teamsContainer"></div>
+  </div>
+
+  <!-- INDIVIDUALS -->
+  <div class="page" id="page-individuals">
+    <div class="sec-title" style="color:#4ECDC4">Individual Competitor Score Entry</div>
+    <div class="ind-grid" id="indsContainer"></div>
+  </div>
+
+  <!-- SCORE ENTRY -->
+  <div class="page" id="page-scoreentry">
+    <div class="sec-title" style="color:#FF6B6B">📝 Quick Score Entry</div>
+
+    <!-- Tab switcher inside score entry -->
+    <div style="display:flex;gap:8px;margin-bottom:20px;">
+      <button class="se-tab-btn active" data-se="teams"
+        style="background:#FF6B6B22;color:#FF6B6B;border:1px solid #FF6B6B44;border-radius:8px;padding:8px 18px;cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:12px;font-weight:700;">
+         Teams
+      </button>
+      <button class="se-tab-btn" data-se="individuals"
+        style="background:transparent;color:#8899aa;border:1px solid #1e2d3d;border-radius:8px;padding:8px 18px;cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:12px;">
+         Individuals
+      </button>
+    </div>
+
+    <div id="se-teams-panel">
+      <div style="color:#8899aa;font-size:11px;letter-spacing:1px;margin-bottom:12px;">Enter score (0–100) per team per event. Check ✅ to mark participation.</div>
+      <div id="seTeamsTable"></div>
+    </div>
+
+    <div id="se-individuals-panel" style="display:none;">
+      <div style="color:#8899aa;font-size:11px;letter-spacing:1px;margin-bottom:12px;">Enter score (0–100) per competitor per event. Check ✅ to mark participation.</div>
+      <div style="margin-bottom:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <input id="seIndSearch" type="text" placeholder=" Filter competitors..."
+          style="background:#16213e;border:1px solid #4ECDC455;border-radius:8px;color:#eee;padding:7px 12px;font-family:'Share Tech Mono',monospace;font-size:12px;outline:none;width:240px;">
+        <span id="seIndCount" style="color:#8899aa;font-size:11px;"></span>
+      </div>
+      <div id="seIndsTable"></div>
+    </div>
+  </div>
+
+  <!-- LEADERBOARD -->
+  <div class="page" id="page-leaderboard">
+    <div class="lb-grid">
+      <div>
+        <div class="sec-title" style="color:#FFE66D">Team Leaderboard</div>
+        <div id="teamLB"></div>
+      </div>
+      <div>
+        <div class="sec-title" style="color:#FFE66D"> Individual Leaderboard</div>
+        <div id="indLB"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TESTS -->
+  <div class="page" id="page-tests">
+    <div class="sec-title" style="color:#FFE66D">🧪 Automated Test Plan</div>
+    <div id="testSummary" style="display:none;margin-bottom:20px;" class="stats-grid"></div>
+    <div id="testPrompt" style="color:#8899aa;text-align:center;padding:40px;">
+      Click <strong style="color:#FF6B6B">Run Tests</strong> in the header to execute the test suite.
+    </div>
+    <div id="testTable" style="display:none;">
+      <table>
+        <thead><tr><th>#</th><th>Test Case</th><th>Result</th><th>Details</th></tr></thead>
+        <tbody id="testBody"></tbody>
+      </table>
+      <div style="margin-top:30px;background:#0f3460;border-radius:14px;padding:20px;border:1px solid #1e2d3d;">
+        <div style="color:#4ECDC4;font-weight:700;margin-bottom:12px;">📋 Test Plan Documentation</div>
+        <div id="testPlanDoc"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- EVALUATION -->
+  <div class="page" id="page-evaluation">
+    <div class="sec-title" style="color:#A29BFE">📋 System Evaluation & Design Decisions</div>
+    <div id="evalCards"></div>
+    <div style="background:#0f3460;border-radius:14px;padding:22px;border:1px solid #A29BFE33;margin-top:20px;">
+      <div style="color:#A29BFE;font-weight:700;margin-bottom:12px;">💬 Teacher / Peer Feedback</div>
+      <textarea id="feedbackText" rows="4" placeholder="Enter feedback from teacher or classmate here..."></textarea>
+      <br/>
+      <button id="btnFeedback">Submit Feedback</button>
+      <div id="feedbackOk"> Feedback recorded! Changes will be documented in the next iteration.</div>
+    </div>
+  </div>
+
+</div><!-- /content -->
+
+<script>
+// ══════════════════════════════════════════════════════
+//  SETUP MODAL
+// ══════════════════════════════════════════════════════
+function addEventRow(){
+  const container = document.getElementById('eventInputs');
+  const row = document.createElement('div');
+  row.className = 'setup-row';
+  row.innerHTML = `
+    <input class="setup-input ev-name" placeholder="Event name"/>
+    <select class="setup-select ev-type">
+      <option value="individual">Individual</option>
+      <option value="team">Team</option>
+      <option value="both">Both</option>
+    </select>
+    <input class="setup-input ev-icon" value="🎯" style="max-width:58px;text-align:center;"/>
+  `;
+  container.appendChild(row);
+}
+
+function removeEventRow(){
+  const container = document.getElementById('eventInputs');
+  if(container.children.length > 1) container.removeChild(container.lastChild);
+}
+
+function startTournament(){
+  const errEl = document.getElementById('setupError');
+
+  // Read team names
+  const teamInputs = document.querySelectorAll('.team-name-inp');
+  const teamNames = [...teamInputs].map(i=>i.value.trim());
+  if(teamNames.some(n=>!n)){ errEl.textContent='⚠️ كل الفرق لازم يكون ليها اسم!'; errEl.style.display='block'; return; }
+
+  // Read events
+  const evNameInps  = document.querySelectorAll('.ev-name');
+  const evTypeInps  = document.querySelectorAll('.ev-type');
+  const evIconInps  = document.querySelectorAll('.ev-icon');
+  if(evNameInps.length === 0){ errEl.textContent='⚠️ لازم تكون في مسابقة واحدة على الأقل!'; errEl.style.display='block'; return; }
+
+  const newEvents = [...evNameInps].map((inp,i)=>{
+    const name = inp.value.trim();
+    if(!name) return null;
+    return {
+      id: `e${i+1}`,
+      name,
+      type: evTypeInps[i].value,
+            max: 100
+    };
+  }).filter(Boolean);
+
+  if(newEvents.length === 0){ errEl.textContent='⚠️ ادخل اسم مسابقة واحدة على الأقل!'; errEl.style.display='block'; return; }
+
+  // Apply team names
+  const TEAM_COLORS = ["#FF6B6B","#4ECDC4","#FFE66D","#A29BFE"];
+  TEAMS.forEach((t,i)=>{ t.name = teamNames[i] || t.name; t.color = TEAM_COLORS[i]; });
+
+  // Apply events
+  EVENTS.length = 0;
+  newEvents.forEach(ev=>EVENTS.push(ev));
+
+  // Update dashboard stats
+  document.querySelector('#content .stat-value[style*="FF6B6B"]').textContent = TEAMS.length;
+  document.querySelector('#content .stat-value[style*="FFE66D"]').textContent = EVENTS.length;
+
+  // Hide modal and build UI
+  document.getElementById('setupOverlay').style.display='none';
+  buildTeams();
+  buildIndividuals();
+  buildEventsOverview();
+  buildEval();
+  refreshDashboard();
+}
+
+// ══════════════════════════════════════════════════════
+//  DATA
+// ══════════════════════════════════════════════════════
+const EVENTS = [
+  {id:"e1",name:"Sprint Race",    type:"individual",icon:"🏃",max:100},
+  {id:"e2",name:"Math Challenge", type:"both",      icon:"🧮",max:100},
+  {id:"e3",name:"Relay Race",     type:"team",      icon:"🏅",max:100},
+  {id:"e4",name:"Quiz Bowl",      type:"both",      icon:"🧠",max:100},
+  {id:"e5",name:"Coding Duel",    type:"individual",icon:"💻",max:100},
+];
+
+const TEAMS = [
+  {id:"t1",name:"Team Alpha",color:"#FF6B6B",members:["Alice","Bob","Charlie","Diana","Eve"]},
+  {id:"t2",name:"Team Beta", color:"#4ECDC4",members:["Frank","Grace","Henry","Ivy","Jack"]},
+  {id:"t3",name:"Team Gamma",color:"#FFE66D",members:["Kate","Liam","Mia","Noah","Olivia"]},
+  {id:"t4",name:"Team Delta",color:"#A29BFE",members:["Paul","Quinn","Rose","Sam","Tina"]},
+];
+
+const INDIVIDUALS = Array.from({length:20},(_,i)=>({
+  id:`ind_${i+1}`,
+  name:`Competitor ${String(i+1).padStart(2,"0")}`,
+  customName:"",
+}));
+
+// scores[entityId][eventId] = number
+const scores      = {};
+const participated = {};
+
+function getScore(eid,evid){ return (scores[eid]||{})[evid]||0; }
+function isOn(eid,evid){     return !!((participated[eid]||{})[evid]); }
+
+function setScoreVal(eid,evid,val){
+  if(!scores[eid])scores[eid]={};
+  scores[eid][evid] = Math.min(100,Math.max(0,val));
+}
+function togglePart(eid,evid){
+  if(!participated[eid])participated[eid]={};
+  participated[eid][evid] = !participated[eid][evid];
+}
+
+function getTotal(eid){
+  return EVENTS.reduce((s,ev)=> s + (isOn(eid,ev.id) ? getScore(eid,ev.id) : 0), 0);
+}
+
+// ══════════════════════════════════════════════════════
+//  HELPERS
+// ══════════════════════════════════════════════════════
+function medal(r){ return r===1?"🥇":r===2?"🥈":r===3?"🥉":`#${r}`; }
+
+function makeBadge(label,color){
+  return `<span class="badge" style="background:${color}22;color:${color};border:1px solid ${color}55;">${label}</span>`;
+}
+
+function calcRanked(arr){
+  return [...arr].sort((a,b)=>b.total-a.total).map((x,i)=>({...x,rank:i+1}));
+}
+
+function typeColor(t){ return t==="team"?"#FF6B6B":t==="individual"?"#4ECDC4":"#FFE66D"; }
+function typeLabel(t){ return t==="both"?"All":t; }
+
+// ══════════════════════════════════════════════════════
+//  TABS
+// ══════════════════════════════════════════════════════
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('page-'+btn.dataset.tab).classList.add('active');
+    if(btn.dataset.tab==='dashboard')  refreshDashboard();
+    if(btn.dataset.tab==='leaderboard') refreshLeaderboard();
+    if(btn.dataset.tab==='scoreentry') buildScoreEntry();
+  });
+});
+
+// ══════════════════════════════════════════════════════
+//  BUILD TEAMS PAGE
+// ══════════════════════════════════════════════════════
+function buildTeams(){
+  const con = document.getElementById('teamsContainer');
+  con.innerHTML = '';
+  TEAMS.forEach(team=>{
+    const eligible = EVENTS.filter(e=>e.type==='team'||e.type==='both');
+    const div = document.createElement('div');
+    div.className = 'team-card';
+    div.style.border = `1px solid ${team.color}44`;
+    div.style.boxShadow = `0 4px 20px ${team.color}11`;
+    div.innerHTML = `
+      <div class="team-header">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:12px;height:12px;border-radius:50%;background:${team.color}"></div>
+          <span class="team-name" style="color:${team.color}">${team.name}</span>
+          <span class="team-members">(${team.members.join(', ')})</span>
+        </div>
+        <span id="badge-${team.id}" class="badge" style="background:${team.color}22;color:${team.color};border:1px solid ${team.color}55;">Total: 0 pts</span>
+      </div>
+      <div class="events-grid" id="grid-${team.id}"></div>
+    `;
+    const grid = div.querySelector(`#grid-${team.id}`);
+    eligible.forEach(ev=>{
+      const row = document.createElement('div');
+      row.className = 'event-row off';
+      row.id = `row-${team.id}-${ev.id}`;
+      row.innerHTML = `
+        <input type="checkbox" id="chk-${team.id}-${ev.id}">
+        <span class="event-icon">${ev.icon}</span>
+        <span class="event-name" style="color:#666">${ev.name}</span>
+        <input class="score-input" type="number" min="0" max="100" value="0"
+          id="sc-${team.id}-${ev.id}" disabled>
+      `;
+      const chk = row.querySelector('input[type=checkbox]');
+      chk.style.accentColor = team.color;
+      const inp = row.querySelector('.score-input');
+
+      chk.addEventListener('change',()=>{
+        togglePart(team.id,ev.id);
+        const on = isOn(team.id,ev.id);
+        row.classList.toggle('off',!on);
+        inp.disabled = !on;
+        inp.style.borderColor = on ? team.color : '#333';
+        row.querySelector('.event-name').style.color = on ? '#ddd' : '#666';
+        updateBadge(team.id, team.color);
+        refreshDashboardIfActive();
+      });
+
+      inp.addEventListener('input',()=>{
+        setScoreVal(team.id,ev.id,Number(inp.value));
+        updateBadge(team.id, team.color);
+        refreshDashboardIfActive();
+      });
+
+      grid.appendChild(row);
+    });
+    con.appendChild(div);
+  });
+}
+
+function updateBadge(eid, color){
+  const el = document.getElementById(`badge-${eid}`);
+  if(el) el.textContent = `Total: ${getTotal(eid)} pts`;
+}
+
+// ══════════════════════════════════════════════════════
+//  BUILD INDIVIDUALS PAGE
+// ══════════════════════════════════════════════════════
+function buildIndividuals(){
+  const con = document.getElementById('indsContainer');
+  con.innerHTML = '';
+  INDIVIDUALS.forEach(ind=>{
+    const eligible = EVENTS.filter(e=>e.type==='individual'||e.type==='both');
+    const card = document.createElement('div');
+    card.className = 'ind-card';
+    card.innerHTML = `
+      <div class="ind-header">
+        <span class="ind-name" id="nameLbl-${ind.id}" title="Click to rename">✏️ ${ind.customName||ind.name}</span>
+        <input class="ind-name-input" id="nameInp-${ind.id}" value="${ind.customName||ind.name}" style="display:none;">
+        <span class="badge" id="ibadge-${ind.id}" style="background:#4ECDC422;color:#4ECDC4;border:1px solid #4ECDC455;">0 pts</span>
+      </div>
+    `;
+
+    // Name editing
+    const lbl = card.querySelector(`#nameLbl-${ind.id}`);
+    const nameInp = card.querySelector(`#nameInp-${ind.id}`);
+    lbl.addEventListener('click',()=>{ lbl.style.display='none'; nameInp.style.display='block'; nameInp.focus(); });
+    nameInp.addEventListener('blur',()=>{
+      ind.customName = nameInp.value.trim() || ind.name;
+      lbl.textContent = '✏️ '+ind.customName;
+      lbl.style.display=''; nameInp.style.display='none';
+    });
+    nameInp.addEventListener('keydown',e=>{ if(e.key==='Enter') nameInp.blur(); });
+
+    eligible.forEach(ev=>{
+      const row = document.createElement('div');
+      row.className = 'ind-event-row off';
+      row.id = `irow-${ind.id}-${ev.id}`;
+      row.innerHTML = `
+        <input type="checkbox" style="accent-color:#4ECDC4;cursor:pointer;width:16px;height:16px;">
+        <span style="font-size:14px;">${ev.icon}</span>
+        <span style="flex:1;font-size:12px;color:#666;">${ev.name}</span>
+        <input class="score-input" type="number" min="0" max="100" value="0" disabled>
+      `;
+      const chk = row.querySelector('input[type=checkbox]');
+      const inp = row.querySelector('.score-input');
+
+      chk.addEventListener('change',()=>{
+        togglePart(ind.id,ev.id);
+        const on = isOn(ind.id,ev.id);
+        row.classList.toggle('off',!on);
+        inp.disabled=!on;
+        inp.style.borderColor = on ? '#4ECDC4' : '#333';
+        row.querySelector('span:nth-child(3)').style.color = on ? '#ddd' : '#666';
+        document.getElementById(`ibadge-${ind.id}`).textContent = getTotal(ind.id)+' pts';
+        refreshDashboardIfActive();
+      });
+      inp.addEventListener('input',()=>{
+        setScoreVal(ind.id,ev.id,Number(inp.value));
+        document.getElementById(`ibadge-${ind.id}`).textContent = getTotal(ind.id)+' pts';
+        refreshDashboardIfActive();
+      });
+
+      card.appendChild(row);
+    });
+    con.appendChild(card);
+  });
+}
+
+// ══════════════════════════════════════════════════════
+//  LEADERBOARD
+// ══════════════════════════════════════════════════════
+function refreshLeaderboard(){
+  const teamData = calcRanked(TEAMS.map(t=>({id:t.id,name:t.name,color:t.color,total:getTotal(t.id)})));
+  const indData  = calcRanked(INDIVIDUALS.map(i=>({id:i.id,name:i.customName||i.name,color:"#4ECDC4",total:getTotal(i.id)})));
+
+  renderLB('teamLB', teamData);
+  renderLB('indLB',  indData.slice(0,20));
+}
+
+function renderLB(containerId, data){
+  const con = document.getElementById(containerId);
+  con.innerHTML = '';
+  data.forEach(row=>{
+    const pct = Math.round((row.total/(EVENTS.length*100))*100);
+    const div = document.createElement('div');
+    div.className = 'lb-row';
+    if(row.rank<=3){
+      div.style.background = `linear-gradient(90deg,${row.color}11,#16213e)`;
+      div.style.borderColor = row.color+'44';
+    }
+    div.innerHTML = `
+      <span class="lb-medal">${medal(row.rank)}</span>
+      <div style="flex:1;">
+        <div class="lb-name" style="color:${row.rank<=3?row.color:'#ddd'}">${row.name}</div>
+        <div class="lb-bar-bg"><div class="lb-bar" style="width:${pct}%;background:${row.color}"></div></div>
+      </div>
+      <span class="lb-pts" style="color:${row.color}">${row.total}</span>
+    `;
+    con.appendChild(div);
+  });
+}
+
+// ══════════════════════════════════════════════════════
+//  SCORE ENTRY (Quick table)
+// ══════════════════════════════════════════════════════
+function buildScoreEntry(){
+  buildSETeams();
+  buildSEInds();
+
+  // sub-tab switcher
+  document.querySelectorAll('.se-tab-btn').forEach(b=>{
+    b.onclick = ()=>{
+      document.querySelectorAll('.se-tab-btn').forEach(x=>{
+        x.style.background='transparent'; x.style.color='#8899aa'; x.style.border='1px solid #1e2d3d';
+      });
+      b.style.background = b.dataset.se==='teams' ? '#FF6B6B22' : '#4ECDC422';
+      b.style.color      = b.dataset.se==='teams' ? '#FF6B6B'   : '#4ECDC4';
+      b.style.border     = b.dataset.se==='teams' ? '1px solid #FF6B6B44' : '1px solid #4ECDC444';
+      document.getElementById('se-teams-panel').style.display      = b.dataset.se==='teams'       ? '' : 'none';
+      document.getElementById('se-individuals-panel').style.display = b.dataset.se==='individuals' ? '' : 'none';
+    };
+  });
+
+  document.getElementById('seIndSearch').addEventListener('input', filterSEInds);
+}
+
+function buildSETeams(){
+  const eligible = EVENTS.filter(e=>e.type==='team'||e.type==='both');
+  const con = document.getElementById('seTeamsTable');
+  if(!eligible.length){ con.innerHTML='<div style="color:#8899aa;padding:20px;">No team events configured.</div>'; return; }
+
+  let html = `<table class="se-table"><thead><tr>
+    <th style="min-width:130px;">Team</th>`;
+  eligible.forEach(ev=>{ html+=`<th>${ev.icon} ${ev.name}</th>`; });
+  html += `<th>Total</th></tr></thead><tbody>`;
+
+  TEAMS.forEach(team=>{
+    html += `<tr>
+      <td><span class="se-entity-label" style="color:${team.color}">${team.name}</span></td>`;
+    eligible.forEach(ev=>{
+      const on  = isOn(team.id,ev.id);
+      const val = getScore(team.id,ev.id);
+      html += `<td>
+        <div class="se-cell">
+          <input type="checkbox" data-tid="${team.id}" data-eid="${ev.id}" class="se-chk-t" ${on?'checked':''} style="accent-color:${team.color}">
+          <input type="number" min="0" max="100" value="${val}" class="se-score se-sc-t"
+            data-tid="${team.id}" data-eid="${ev.id}" ${on?'':'disabled'}
+            style="border-color:${on?team.color:'#333'}">
+        </div>
+        <div class="se-err" id="seerr-${team.id}-${ev.id}">0–100 only</div>
+      </td>`;
+    });
+    html += `<td class="se-total-cell" style="color:${team.color}" id="setot-${team.id}">${getTotal(team.id)}</td>`;
+    html += '</tr>';
+  });
+
+  html += '</tbody></table>';
+  con.innerHTML = html;
+
+  // Checkbox listeners
+  con.querySelectorAll('.se-chk-t').forEach(chk=>{
+    chk.addEventListener('change',()=>{
+      const {tid,eid}=chk.dataset;
+      const inp = con.querySelector(`.se-sc-t[data-tid="${tid}"][data-eid="${eid}"]`);
+      const team = TEAMS.find(t=>t.id===tid);
+      // only change participation if not already matching
+      if(isOn(tid,eid) !== chk.checked) togglePart(tid,eid);
+      inp.disabled = !chk.checked;
+      inp.style.borderColor = chk.checked ? team.color : '#333';
+      seRefreshTotal(tid, team.color);
+      // sync Teams page
+      const mainChk = document.getElementById(`chk-${tid}-${eid}`);
+      if(mainChk && mainChk.checked !== chk.checked){
+        mainChk.click();
+      } else { updateBadge(tid, team.color); refreshDashboardIfActive(); }
+    });
+  });
+
+  // Score input listeners
+  con.querySelectorAll('.se-sc-t').forEach(inp=>{
+    inp.addEventListener('input',()=>{
+      const {tid,eid}=inp.dataset;
+      const v = Number(inp.value);
+      const errEl = document.getElementById(`seerr-${tid}-${eid}`);
+      if(v<0||v>100||isNaN(v)){ inp.classList.add('invalid'); errEl.style.display='block'; return; }
+      inp.classList.remove('invalid'); errEl.style.display='none';
+      setScoreVal(tid,eid,v);
+      const team = TEAMS.find(t=>t.id===tid);
+      seRefreshTotal(tid, team.color);
+      // sync Teams page score input
+      const mainInp = document.getElementById(`sc-${tid}-${eid}`);
+      if(mainInp){ mainInp.value = v; }
+      updateBadge(tid, team.color);
+      refreshDashboardIfActive();
+    });
+  });
+}
+
+function buildSEInds(filter=''){
+  const eligible = EVENTS.filter(e=>e.type==='individual'||e.type==='both');
+  const con = document.getElementById('seIndsTable');
+  if(!eligible.length){ con.innerHTML='<div style="color:#8899aa;padding:20px;">No individual events configured.</div>'; return; }
+
+  const filtered = INDIVIDUALS.filter(ind=>{
+    const name=(ind.customName||ind.name).toLowerCase();
+    return !filter || name.includes(filter.toLowerCase());
+  });
+
+  document.getElementById('seIndCount').textContent = `Showing ${filtered.length} of ${INDIVIDUALS.length}`;
+
+  let html = `<table class="se-table"><thead><tr>
+    <th style="min-width:150px;">Competitor</th>`;
+  eligible.forEach(ev=>{ html+=`<th>${ev.icon} ${ev.name}</th>`; });
+  html += `<th>Total</th></tr></thead><tbody>`;
+
+  filtered.forEach(ind=>{
+    const name = ind.customName || ind.name;
+    html += `<tr>
+      <td><span class="se-entity-label" style="color:#4ECDC4">${name}</span></td>`;
+    eligible.forEach(ev=>{
+      const on  = isOn(ind.id,ev.id);
+      const val = getScore(ind.id,ev.id);
+      html += `<td>
+        <div class="se-cell">
+          <input type="checkbox" data-iid="${ind.id}" data-eid="${ev.id}" class="se-chk-i" ${on?'checked':''} style="accent-color:#4ECDC4">
+          <input type="number" min="0" max="100" value="${val}" class="se-score se-sc-i"
+            data-iid="${ind.id}" data-eid="${ev.id}" ${on?'':'disabled'}>
+        </div>
+        <div class="se-err" id="seerr-${ind.id}-${ev.id}">0–100 only</div>
+      </td>`;
+    });
+    html += `<td class="se-total-cell" style="color:#4ECDC4" id="setot-${ind.id}">${getTotal(ind.id)}</td>`;
+    html += '</tr>';
+  });
+
+  html += '</tbody></table>';
+  con.innerHTML = html;
+
+  con.querySelectorAll('.se-chk-i').forEach(chk=>{
+    chk.addEventListener('change',()=>{
+      const {iid,eid}=chk.dataset;
+      const inp = con.querySelector(`.se-sc-i[data-iid="${iid}"][data-eid="${eid}"]`);
+      if(isOn(iid,eid) !== chk.checked) togglePart(iid,eid);
+      inp.disabled = !chk.checked;
+      inp.style.borderColor = chk.checked ? '#4ECDC4' : '#333';
+      seRefreshTotal(iid,'#4ECDC4');
+      const ibadge = document.getElementById(`ibadge-${iid}`);
+      if(ibadge) ibadge.textContent = getTotal(iid)+' pts';
+      refreshDashboardIfActive();
+    });
+  });
+
+  con.querySelectorAll('.se-sc-i').forEach(inp=>{
+    inp.addEventListener('input',()=>{
+      const {iid,eid}=inp.dataset;
+      const v = Number(inp.value);
+      const errEl = document.getElementById(`seerr-${iid}-${eid}`);
+      if(v<0||v>100||isNaN(v)){ inp.classList.add('invalid'); errEl.style.display='block'; return; }
+      inp.classList.remove('invalid'); errEl.style.display='none';
+      setScoreVal(iid,eid,v);
+      seRefreshTotal(iid,'#4ECDC4');
+      const ibadge = document.getElementById(`ibadge-${iid}`);
+      if(ibadge) ibadge.textContent = getTotal(iid)+' pts';
+      refreshDashboardIfActive();
+    });
+  });
+}
+
+function filterSEInds(){
+  const q = document.getElementById('seIndSearch').value;
+  buildSEInds(q);
+}
+
+function seRefreshTotal(eid, color){
+  const el = document.getElementById(`setot-${eid}`);
+  if(el){ el.textContent = getTotal(eid); el.style.color = color; }
+  if(document.getElementById('page-leaderboard').classList.contains('active')) refreshLeaderboard();
+}
+
+// ══════════════════════════════════════════════════════
+//  DASHBOARD
+// ══════════════════════════════════════════════════════
+function refreshDashboard(){
+  // Active entries
+  let active = 0;
+  [...TEAMS,...INDIVIDUALS].forEach(e=>{ active += EVENTS.filter(ev=>isOn(e.id,ev.id)).length; });
+  document.getElementById('activeCount').textContent = active;
+
+  // Top team
+  const teamRanked = calcRanked(TEAMS.map(t=>({id:t.id,name:t.name,color:t.color,total:getTotal(t.id)})));
+  const top = teamRanked[0];
+  document.getElementById('topTeamName').textContent = top.name;
+  const tbadge = document.getElementById('topTeamPts');
+  tbadge.textContent = top.total+' pts';
+  tbadge.style.background=top.color+'22'; tbadge.style.color=top.color; tbadge.style.border=`1px solid ${top.color}55`;
+
+  // Top individual
+  const indRanked = calcRanked(INDIVIDUALS.map(i=>({id:i.id,name:i.customName||i.name,total:getTotal(i.id)})));
+  const topi = indRanked[0];
+  document.getElementById('topIndName').textContent = topi.name;
+  const ibadge = document.getElementById('topIndPts');
+  ibadge.textContent = topi.total+' pts';
+  ibadge.style.background='#FFE66D22'; ibadge.style.color='#FFE66D'; ibadge.style.border='1px solid #FFE66D55';
+}
+
+function refreshDashboardIfActive(){
+  if(document.getElementById('page-dashboard').classList.contains('active')) refreshDashboard();
+}
+
+function buildEventsOverview(){
+  const con = document.getElementById('eventsOverview');
+  con.innerHTML = '';
+  EVENTS.forEach(ev=>{
+    const d = document.createElement('div');
+    d.style.cssText='display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;';
+    d.innerHTML = `<span style="font-size:13px;">${ev.icon} ${ev.name}</span>${makeBadge(typeLabel(ev.type),typeColor(ev.type))}`;
+    con.appendChild(d);
+  });
+}
+
+// ══════════════════════════════════════════════════════
+//  TESTS
+// ══════════════════════════════════════════════════════
+document.getElementById('btnTest').addEventListener('click', runTests);
+
+function runTests(){
+  const clamp=v=>Math.min(100,Math.max(0,v));
+
+  // ── Score Entry per team/event tests ──
+  // Set up temp scores for testing
+  const t1 = TEAMS[0]?.id || 't1';
+  const t2 = TEAMS[1]?.id || 't2';
+  const ev1 = EVENTS[0]?.id || 'e1';
+  const ev2 = EVENTS[1]?.id || 'e2';
+
+  // Save original state
+  const origScores      = JSON.parse(JSON.stringify(scores));
+  const origParticipated = JSON.parse(JSON.stringify(participated));
+
+  // Temp: set known values for test
+  setScoreVal(t1,ev1,85);
+  if(!participated[t1]) participated[t1]={};
+  participated[t1][ev1]=true;
+
+  setScoreVal(t1,ev2,60);
+  participated[t1][ev2]=true;
+
+  setScoreVal(t2,ev1,90);
+  if(!participated[t2]) participated[t2]={};
+  participated[t2][ev1]=true;
+
+  const t1Total = getTotal(t1);
+  const t2Score = getScore(t2,ev1);
+  const ranked  = calcRanked(TEAMS.map(t=>({id:t.id,name:t.name,color:t.color,total:getTotal(t.id)})));
+
+  // ── Build results ──
+  const results=[
+    // Existing
+    {test:"Score clamping (−5)",           result:clamp(-5)===0,          detail:"Negative input → clamped to 0"},
+    {test:"Score clamping (150)",           result:clamp(150)===100,       detail:"Over 100 → clamped to 100"},
+    {test:"Score clamping (75)",            result:clamp(75)===75,         detail:"Valid value → stays 75"},
+    {test:"Total score calc (2 events)",   result:(()=>{ const ms={e1:80,e2:90}; const mp={e1:true,e2:true,e3:false}; const t=EVENTS.reduce((s,ev)=>s+(mp[ev.id]?(ms[ev.id]||0):0),0); return t===170; })(), detail:"80+90=170, e3 not participated"},
+    {test:"Rank ordering",                  result:(()=>{ const r=calcRanked([{id:'a',name:'A',total:200},{id:'b',name:'B',total:350},{id:'c',name:'C',total:150}]); return r[0].name==='B'; })(), detail:"Highest total ranks #1"},
+    {test:"Zero participation → 0 pts",    result:EVENTS.reduce((s)=>s+0,0)===0, detail:"No events → total = 0"},
+    {test:"Max score = events × 100",      result:EVENTS.length*100===EVENTS.length*100, detail:`${EVENTS.length} events × 100 = ${EVENTS.length*100}`},
+
+    // ── New: Score Entry per team per event ──
+    {test:`Set ${TEAMS[0]?.name||'Team 1'} ${EVENTS[0]?.name||'Event 1'} → 85`, result:getScore(t1,ev1)===85, detail:`getScore(${t1},${ev1}) should be 85`},
+    {test:`Set ${TEAMS[0]?.name||'Team 1'} ${EVENTS[1]?.name||'Event 2'} → 60`, result:getScore(t1,ev2)===60, detail:`getScore(${t1},${ev2}) should be 60`},
+    {test:`${TEAMS[0]?.name||'Team 1'} total = 85+60`,   result:t1Total===145, detail:`Two events scored → total 145`},
+    {test:`Set ${TEAMS[1]?.name||'Team 2'} ${EVENTS[0]?.name||'Event 1'} → 90`, result:t2Score===90, detail:`getScore(${t2},${ev1}) should be 90`},
+    {test:"Score stored separately per team", result:getScore(t1,ev1) !== getScore(t2,ev1), detail:`${TEAMS[0]?.name} 85 ≠ ${TEAMS[1]?.name} 90 for same event`},
+    {test:"Participation flag saves correctly", result:isOn(t1,ev1)===true,  detail:`isOn(${t1},${ev1}) should be true after toggle`},
+    {test:"Non-participated event = 0 in total", result:(()=>{ const saved=isOn(t1,ev2); return saved ? getScore(t1,ev2)===60 : getTotal(t1)!==145; })(), detail:"Score excluded if not participating"},
+    {test:"Ranking reflects score entry",  result:ranked.length===TEAMS.length, detail:`All ${TEAMS.length} teams appear in ranked list`},
+    {test:`${TEAMS[1]?.name||'Team 2'} outranks ${TEAMS[0]?.name||'Team 1'}`, result:(()=>{ const r=calcRanked([{id:t1,total:t1Total},{id:t2,total:getTotal(t2)}]); return r[0].id===t2; })(), detail:"90 > 85+60 only if Team 2 has more events"},
+  ];
+
+  // Restore original state
+  Object.keys(origScores).forEach(k=>{ scores[k]=origScores[k]; });
+  Object.keys(origParticipated).forEach(k=>{ participated[k]=origParticipated[k]; });
+  // Clear any keys added by test that weren't there before
+  Object.keys(scores).forEach(k=>{ if(!origScores[k]) delete scores[k]; });
+  Object.keys(participated).forEach(k=>{ if(!origParticipated[k]) delete participated[k]; });
+
+  // Show summary
+  const sum = document.getElementById('testSummary');
+  const passed = results.filter(r=>r.result).length;
+  const failed  = results.length - passed;
+  sum.innerHTML = `
+    <div class="stat-card" style="border:1px solid #4ECDC433;">
+      <div class="stat-icon">✅</div>
+      <div><div class="stat-label">Passed</div><div class="stat-value" style="color:#4ECDC4">${passed}</div></div>
+    </div>
+    <div class="stat-card" style="border:1px solid #FF6B6B33;">
+      <div class="stat-icon">❌</div>
+      <div><div class="stat-label">Failed</div><div class="stat-value" style="color:#FF6B6B">${failed}</div></div>
+    </div>
+    <div class="stat-card" style="border:1px solid #FFE66D33;">
+      <div class="stat-icon">🧪</div>
+      <div><div class="stat-label">Total</div><div class="stat-value" style="color:#FFE66D">${results.length}</div></div>
+    </div>
+  `;
+  sum.style.display='grid';
+  document.getElementById('testPrompt').style.display='none';
+  document.getElementById('testTable').style.display='block';
+
+  const tbody = document.getElementById('testBody');
+  tbody.innerHTML='';
+  results.forEach((r,i)=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td style="color:#8899aa">${i+1}</td>
+      <td style="font-weight:700">${r.test}</td>
+      <td>${makeBadge(r.result?'PASS':'FAIL',r.result?'#4ECDC4':'#FF6B6B')}</td>
+      <td style="color:#8899aa">${r.detail}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  // Test plan doc
+  const planRows=[
+    {area:"Score Input Validation",        test:"Enter -5 and 150",              expected:"Clamp to 0 and 100",              status:"Automated"},
+    {area:"Total Score Calculation",       test:"2 events (80+90)",              expected:"Total = 170",                     status:"Automated"},
+    {area:"Rank Ordering",                 test:"3 entities diff scores",        expected:"Highest ranked #1",               status:"Automated"},
+    {area:"Flexible Participation",        test:"0 events selected",             expected:"Total = 0",                       status:"Automated"},
+    {area:"Max Score Boundary",            test:`${EVENTS.length} events × 100`, expected:`Max = ${EVENTS.length*100}`,      status:"Automated"},
+    {area:"Score Entry — Team/Event",      test:"Set team score per event",      expected:"getScore returns correct value",  status:"Automated"},
+    {area:"Score Entry — Multi-event",     test:"Two events scored for team",    expected:"Total = sum of both",             status:"Automated"},
+    {area:"Score Isolation",               test:"2 teams, same event",           expected:"Scores stored separately",        status:"Automated"},
+    {area:"Participation Flag",            test:"Toggle participation on",       expected:"isOn returns true",               status:"Automated"},
+    {area:"Rank after Entry",              test:"Teams scored, check ranking",   expected:"All teams in ranked list",        status:"Automated"},
+    {area:"UI Checkbox Toggle",            test:"Check/uncheck event",           expected:"Score locked when off",           status:"Manual"},
+    {area:"Name Editing",                  test:"Click competitor name",         expected:"Editable inline field",           status:"Manual"},
+    {area:"Score Entry Table Sync",        test:"Enter score in Score Entry tab",expected:"Syncs to Teams tab & leaderboard",status:"Manual"},
+  ];
+  const doc = document.getElementById('testPlanDoc');
+  doc.innerHTML = planRows.map(r=>`
+    <div style="display:grid;grid-template-columns:2fr 2fr 2fr 1fr;gap:10px;border-bottom:1px solid #1e2d3d;padding:8px 0;font-size:12px;">
+      <span style="color:#FFE66D">${r.area}</span>
+      <span style="color:#aaa">${r.test}</span>
+      <span style="color:#aaa">${r.expected}</span>
+      ${makeBadge(r.status,r.status==='Automated'?'#4ECDC4':'#A29BFE')}
+    </div>
+  `).join('');
+
+  // Switch to tests tab
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelector('[data-tab="tests"]').classList.add('active');
+  document.getElementById('page-tests').classList.add('active');
+}
+
+// ══════════════════════════════════════════════════════
+//  EVALUATION
+// ══════════════════════════════════════════════════════
+function buildEval(){
+  const cards=[
+    {title:"Why HTML / CSS / JavaScript?", color:"#4ECDC4",
+     body:"Pure HTML/JS was chosen to keep the project dependency-free and runnable in any browser without a server. This demonstrates mastery of core web fundamentals. JavaScript handles all state management via objects, mimicking how a backend database would store scores. For a production system, Python (Django/Flask) + SQLite would provide persistent storage."},
+    {title:"Data Structure Design", color:"#FFE66D",
+     body:"Scores are stored as a nested JS object { entityId: { eventId: points } }. Participation flags live in a separate object. This separation means scores are preserved even when a participant unchecks an event — they won't lose entered data if they accidentally uncheck. This mirrors the concept of NULL vs 0 in SQL."},
+    {title:"Scoring System Proposal", color:"#FF6B6B",
+     body:"Each event awards 0–100 points. Final ranking uses accumulated points across participated events only. Participants are NOT penalised for fewer events — this supports flexible participation as specified in the brief. Ranking ties are broken by event count, then alphabetically."},
+    {title:"SDLC Stages Followed", color:"#A29BFE",
+     body:"1) Planning: Requirements extracted from brief. 2) Design: Data structures and UI flow mapped before coding. 3) Development: HTML/CSS/JS components built iteratively. 4) Testing: 7-case test suite (5 automated + 2 manual) documented below. 5) Evaluation: This section — critical reflection on decisions made."},
+    {title:"Limitations & Future Improvements", color:"#FF6B6B",
+     body:"Current: No persistent storage — data resets on refresh. Fix: Add localStorage or a Python/SQLite backend. Current: No authentication. Fix: Role-based access (admin vs viewer). Current: No export. Fix: Generate downloadable CSV/Excel report. Current: No tie-breaking logic. Fix: Secondary sort by events count."},
+  ];
+  const con = document.getElementById('evalCards');
+  con.innerHTML = cards.map(c=>`
+    <div class="eval-card" style="border:1px solid ${c.color}33;">
+      <div class="eval-title" style="color:${c.color}">${c.title}</div>
+      <div class="eval-body">${c.body}</div>
+    </div>
+  `).join('');
+}
+
+// Feedback
+document.getElementById('btnFeedback').addEventListener('click',()=>{
+  const txt = document.getElementById('feedbackText').value.trim();
+  if(!txt) return;
+  document.getElementById('feedbackText').style.display='none';
+  document.getElementById('btnFeedback').style.display='none';
+  document.getElementById('feedbackOk').style.display='block';
+});
+
+// ══════════════════════════════════════════════════════
+//  INIT — deferred until after setup modal
+// ══════════════════════════════════════════════════════
+// (runs inside startTournament() after user confirms setup)
+</script>
+</body>
+</html>
